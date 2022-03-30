@@ -46,11 +46,19 @@ public class InputManager : MonoBehaviour {
     }
     
     private void OnEnable() {
-        input.Gameplay.Enable();
+        EnableGameplay(true);
     }
 
     private void OnDisable() {
-        input.Gameplay.Disable();
+        EnableGameplay(false);
+    }
+
+    public void EnableGameplay(bool enable) {
+        if (enable) {
+            input.Gameplay.Enable();
+        } else {
+            input.Gameplay.Disable();
+        }
     }
     
     // Gameplay
@@ -65,11 +73,12 @@ public class InputManager : MonoBehaviour {
     // UI
     private void OnSettings() {
         inputMenuEvent.Invoke();
-
+        
+        // TODO: Enable UI and Gameplay ETC
         if(input.Gameplay.enabled) {
-            // EnableUI(true);
+            
         } else {
-            // EnableUI(false);
+            
         }
     }
 

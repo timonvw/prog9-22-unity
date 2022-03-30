@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IReset
 {
     [Header("Player")]
     [SerializeField] private Rigidbody rb;
@@ -17,6 +18,11 @@ public class PlayerController : MonoBehaviour
     private float verticalMoveDirection;
     private float horizontalMoveDirection;
     private bool isGrounded;
+    private Vector3 startPos;
+
+    private void Start() {
+        startPos = transform.position;
+    }
 
     void FixedUpdate() {
         GroundCheck();
@@ -27,7 +33,7 @@ public class PlayerController : MonoBehaviour
         // Push ball in given directions
         forceDirection.x = horizontalMoveDirection;
         forceDirection.z = verticalMoveDirection;
-
+        
         // Reduce the movement speed when we are in the air
         if (isGrounded) {
             rb.AddForce(forceDirection * speed, ForceMode.Impulse);
@@ -54,18 +60,32 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics.CheckSphere(sphereLocation, 1.5f, groundMask);
     }
 
-    private void OnCollisionEnter(Collision collision) {
-        if (collision.gameObject.CompareTag("Enemy")) {
-            Rigidbody enemyRigidbody = collision.gameObject.GetComponent<Rigidbody>();
-            Vector3 awayFromPlayer = collision.gameObject.transform.position - transform.position;
-            enemyRigidbody.AddForce(awayFromPlayer, ForceMode.Impulse);
+    private void OnCollisionEnter(Collision coll) {
+        if (coll.gameObject.CompareTag("Enemy")) {
+            Rigidbody enemyRb = coll.gameObject.GetComponent<Rigidbody>();
+            Vector3 forceDir = coll.gameObject.transform.position - transform.position;
+            enemyRb.AddForce(forceDir * (6 / enemyRb.mass), ForceMode.Impulse);
         }
+    }
+    
+    private void ResetPhysics() {
+        rb.velocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    public void OnReset() {
+        transform.position = startPos + Vector3.up;
+        ResetPhysics();
     }
     
     // Event callbacks
     public void OnMove(float directionX, float directionY) {
         horizontalMoveDirection = directionX;
         verticalMoveDirection = directionY;
+
+        if (directionX == 0f && directionY == 0f) {
+            // ResetPhysics();
+        }
     }
     public void OnJump(bool jump) {
         if(isGrounded) {
